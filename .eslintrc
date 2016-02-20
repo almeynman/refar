@@ -1,0 +1,18 @@
+{
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true,
+    "es6": true
+  },
+  "extends": "airbnb",
+  "rules": {
+    "semi": [2, "never"],
+    "object-curly-spacing": [1, "always"],
+    "comma-dangle": [2, "never"],
+    "react/wrap-multilines": [0],
+    "new-cap": [0],
+    "id-length": [0]
+  }
+}
