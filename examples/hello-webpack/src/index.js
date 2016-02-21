@@ -8,25 +8,7 @@ import Hello from './Hello'
 
 const model = new Model({
   cache: {
-    hello: 'Hello',
-    todos: {
-      0: {
-        text: 'learn react',
-        completed: false
-      },
-      1: {
-        text: 'learn rxjs',
-        completed: false
-      },
-      2: {
-        text: 'learn falcor',
-        completed: false
-      },
-      3: {
-        text: 'use refar with ease',
-        complete: false
-      }
-    }
+    hello: 'Hello'
   }
 })
 

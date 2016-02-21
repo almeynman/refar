@@ -10,7 +10,7 @@ import { toPaths } from './utils/toPaths'
 
 const defaultInteractions = () => ({})
 
-export function createContainer(WrappedComponent, { fragments, interactions = defaultInteractions }) {
+export function createContainer(WrappedComponent, { root = true, fragments, interactions = defaultInteractions }) {
   invariant(fragments, `There is no point of using createContainer
     for ${WrappedComponent.displayName || WrappedComponent.name}
     if you do not require data from model for it`
@@ -24,26 +24,28 @@ export function createContainer(WrappedComponent, { fragments, interactions = de
     static displayName = `${WrappedComponent.displayName || WrappedComponent.name}Container`
     static contextTypes = {
       model: modelType.isRequired,
-      intents: PropTypes.object.isRequired
+      intentFactory: PropTypes.object.isRequired
     }
     static fragments = fragments // eslint-disable-line
+    static intents
     constructor(props, context) {
       super(props, context)
-      const { model, intents } = context
+      const { model, intentFactory } = context
       invariant(model,
         `Could not find "model" in the context
         of "${this.constructor.displayName}".
         Please wrap the root component in a <Provider>`
       )
-      invariant(intents,
-        `Could not find "intents" in the context
+      invariant(intentFactory,
+        `Could not find "intentFactory" in the context
         of "${this.constructor.displayName}".
         Please file an issue`
       )
       // TODO consider using versions with getFragment
       this.componentHasMounted = false
 
-      this.subscription = model.$.
+      if (root) {
+        this.subscription = model.$.
         mergeMap(version => {
           const pathsAsArrayOrObject = fragments()
           let paths
@@ -71,19 +73,25 @@ export function createContainer(WrappedComponent, { fragments, interactions = de
           }
           this.setState(data.json)
         })
+      }
 
       // run interactions
-      this.intents = interactions(model, intents)
+      if (!Container.intents) {
+        const intents = interactions(model, intentFactory)
+        Container.intents = intents
+      }
     }
     componentDidMount() {
       this.componentHasMounted = true
     }
     componentWillUnmount() {
-      // Clean-up subscription before un-mounting
-      this.subscription.unsubscribe()
+      if (root) {
+        // Clean-up subscription before un-mounting
+        this.subscription.unsubscribe()
+      }
     }
     render() {
-      return createElement(WrappedComponent, { ...this.state, ...this.intents })
+      return createElement(WrappedComponent, { ...this.state, ...Container.intents, ...this.props })
     }
   }
 

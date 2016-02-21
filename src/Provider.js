@@ -2,6 +2,7 @@ import { Component, PropTypes, Children } from 'react'
 import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 import invariant from 'invariant'
+import merge from 'lodash/merge'
 
 import { modelType } from './PropTypes'
 
@@ -28,11 +29,11 @@ export class Provider extends Component {
   }
   static childContextTypes = {
     model: modelType.isRequired,
-    intents: PropTypes.object.isRequired
+    intentFactory: PropTypes.object.isRequired
   }
   getChildContext() { // eslint-disable-line
-    const { model, intents } = this
-    return { model, intents }
+    const { model, intentFactory } = this
+    return { model, intentFactory }
   }
   constructor(props, context) {
     super(props, context)
@@ -40,8 +41,12 @@ export class Provider extends Component {
 
     // updates model's cache locally
     // usefull for haveing local changes
-    this.model.setLocal = obj => {
+    this.model.assign = obj => {
       this.model.setCache(Object.assign(this.model.getCache(), obj))
+    }
+
+    this.model.deepAssign = obj => {
+      this.model.setCache(merge(this.model.getCache(), obj))
     }
 
     // changes to model should be broadcasted
@@ -56,13 +61,13 @@ export class Provider extends Component {
     }
 
     // create intents
-    this.intents = {}
-    this.intents.get = name => {
+    this.intentFactory = {}
+    this.intentFactory.get = name => {
       invariant(name, 'Invalid name for the intent collection.')
-      if (!this.intents[name]) {
-        this.intents[name] = new Subject()
+      if (!this.intentFactory[name]) {
+        this.intentFactory[name] = new Subject()
       }
-      return this.intents[name]
+      return this.intentFactory[name]
     }
   }
   render() {

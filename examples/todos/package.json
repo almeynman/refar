@@ -1,7 +1,7 @@
 {
-  "name": "refar-minimal-example",
+  "name": "refar-todos-example",
   "version": "1.0.0",
-  "description": "Hello World implementation with Refar (Falcor + Rx + React)",
+  "description": "TodoMVC implementation with Refar (Falcor + Rx + React)",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -24,6 +24,7 @@
   "dependencies": {
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
+    "react-pure-render": "^1.0.2",
     "rxjs": "^5.0.0-beta.2"
   }
 }

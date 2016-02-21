@@ -10,7 +10,6 @@ class Hello extends React.Component { // a little worker
   render() {
     return (
       <div>
-        <div>Here you are</div>
         <div>{this.props.hello} {this.props.name}</div>
         <div><input onChange={e => this.props.updateName$.next(e.target.value)} /></div>
       </div>
@@ -28,7 +27,8 @@ export default createContainer(Hello, {
   interactions(model, intents) {
     const updateName$ = intents.get('updateName')
     updateName$.
-      subscribe(name => model.setLocal({ name }))
+      subscribe(name => model.assign({ name }))
+      
     return {
       updateName$
     }
