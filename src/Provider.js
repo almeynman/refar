@@ -2,10 +2,10 @@ import { Component, PropTypes, Children } from 'react'
 import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 import invariant from 'invariant'
-import merge from 'lodash/merge'
 import isPlainObject from 'lodash/isPlainObject'
+import isArray from 'lodash/isArray'
 
-import { toPathValues } from './utils'
+import { toPathValues, toPaths } from './utils'
 import { modelType } from './PropTypes'
 
 let didWarnAboutReceivingModel = false
@@ -55,26 +55,30 @@ export class Provider extends Component {
     this.model.local = this.model.withoutDataSource()
     // local updates
     const previousSet = this.model.local.set
-    const normalizePathValues = pathValues => {
-      invariant(pathValues, `set must accept either falcor's pathValue object
-      or a plain object`)
+    this.model.local.set = (...pathValues) => {
+      invariant(pathValues && pathValues.length > 0, `set must accept either
+        falcor's pathValue object or a plain object`)
       let finalPathValues
       if (pathValues.length === 1 && isPlainObject(pathValues[0]) && !pathValues[0].path) {
         finalPathValues = toPathValues(pathValues[0])
       } else {
         finalPathValues = pathValues
       }
-      return finalPathValues
-    }
-    this.model.local.set = (...pathValues) => {
-      const finalPathValues = normalizePathValues(pathValues)
       previousSet.apply(this.model.local, finalPathValues).then(() => {})
     }
 
-    this.model.local.delete = (...pathValues) => {
-      const finalPathValues = normalizePathValues(pathValues)
-      finalPathValues.forEach(pV => pV.value = { $type: 'atom', '$expires': 0 })
-      previousSet.apply(this.model.local, finalPathValues).then(() => {})
+    this.model.local.delete = (...paths) => {
+      invariant(paths && paths.length > 0, `delete must accept either
+        falcor's paths or a plain object`)
+      let finalPaths
+      if (isPlainObject(paths[0])) {
+        finalPaths = toPaths(paths[0], true, true)
+      }
+      if (isArray(paths[0])) {
+        finalPaths = paths
+      }
+      const pathValues = finalPaths.map(path => ({ path, value: { $type: 'atom', '$expires': 0 } }))
+      previousSet.apply(this.model.local, pathValues).then(() => {})
     }
 
     // create intents
