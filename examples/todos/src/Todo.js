@@ -19,7 +19,7 @@ class Todo extends PureComponent { // a little worker
             value={text}
             onChange={e => e.preventDefault() || this.props.changeText$.next({ text: e.target.value, id })}
           />
-          <button onClick={e => this.props.deleteTodo(id)}>
+          <button onClick={e => this.props.deleteTodo$.next(this.props.index)}>
             Delete
           </button>
         </div>
@@ -40,7 +40,7 @@ export default createContainer(Todo, {
   interactions(model, intents) {
     const toggleCompleted$ = intents.get('toggleCompleted')
     toggleCompleted$.
-      subscribe(({ completed, id }) => model.deepAssign({
+      subscribe(({ completed, id }) => model.local.set({
         todosById: {
           [id]: {
             completed
@@ -50,7 +50,7 @@ export default createContainer(Todo, {
 
     const changeText$ = intents.get('changeText')
     changeText$.
-      subscribe(({ text, id }) => model.deepAssign({
+      subscribe(({ text, id }) => model.local.set({
         todosById: {
           [id]: {
             text
@@ -60,7 +60,11 @@ export default createContainer(Todo, {
 
     const deleteTodo$ = intents.get('deleteTodo')
     deleteTodo$.
-      subscribe(id => model.delete({ todos }))
+      subscribe(index => model.local.delete({
+        todos: {
+          [index]: null
+        }
+      }))
 
     return {
       toggleCompleted$,

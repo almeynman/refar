@@ -3,7 +3,9 @@ import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject'
 import { Subject } from 'rxjs/Subject'
 import invariant from 'invariant'
 import merge from 'lodash/merge'
+import isPlainObject from 'lodash/isPlainObject'
 
+import { toPathValues } from './utils'
 import { modelType } from './PropTypes'
 
 let didWarnAboutReceivingModel = false
@@ -39,16 +41,6 @@ export class Provider extends Component {
     super(props, context)
     this.model = props.model
 
-    // updates model's cache locally
-    // usefull for haveing local changes
-    this.model.assign = obj => {
-      this.model.setCache(Object.assign(this.model.getCache(), obj))
-    }
-
-    this.model.deepAssign = obj => {
-      this.model.setCache(merge(this.model.getCache(), obj))
-    }
-
     // changes to model should be broadcasted
     // TODO do I need getVersion?
     this.model.$ = new BehaviorSubject(this.model.getVersion()) // 1 here is a initial value
@@ -58,6 +50,31 @@ export class Provider extends Component {
         previousOnChange()
       }
       this.model.$.next(this.model.getVersion())
+    }
+
+    this.model.local = this.model.withoutDataSource()
+    // local updates
+    const previousSet = this.model.local.set
+    const normalizePathValues = pathValues => {
+      invariant(pathValues, `set must accept either falcor's pathValue object
+      or a plain object`)
+      let finalPathValues
+      if (pathValues.length === 1 && isPlainObject(pathValues[0]) && !pathValues[0].path) {
+        finalPathValues = toPathValues(pathValues[0])
+      } else {
+        finalPathValues = pathValues
+      }
+      return finalPathValues
+    }
+    this.model.local.set = (...pathValues) => {
+      const finalPathValues = normalizePathValues(pathValues)
+      previousSet.apply(this.model.local, finalPathValues).then(() => {})
+    }
+
+    this.model.local.delete = (...pathValues) => {
+      const finalPathValues = normalizePathValues(pathValues)
+      finalPathValues.forEach(pV => pV.value = { $type: 'atom', '$expires': 0 })
+      previousSet.apply(this.model.local, finalPathValues).then(() => {})
     }
 
     // create intents

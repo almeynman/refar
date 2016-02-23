@@ -1,12 +1,12 @@
 import { Component, PropTypes, createElement } from 'react'
 import { Observable } from 'rxjs/Observable'
 import isPlainObject from 'lodash/isPlainObject'
-import isArray from 'lodash/isPlainObject'
+import isArray from 'lodash/isArray'
 import hoistStatics from 'hoist-non-react-statics'
 import invariant from 'invariant'
 
 import { modelType } from './PropTypes'
-import { toPaths } from './utils/toPaths'
+import { toPaths } from './utils'
 
 const defaultInteractions = () => ({})
 
@@ -60,7 +60,7 @@ export function createContainer(WrappedComponent, { root = true, fragments, inte
             refar's object notation`
           )
           return Observable.fromPromise(
-            model.get(...toPaths(fragments()))
+            model.get(...paths)
           )
         }).
         subscribe(data => {

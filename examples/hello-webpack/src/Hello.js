@@ -1,5 +1,8 @@
 import React from 'react'
 import { createContainer } from '../../../lib'
+import { Model } from 'falcor'
+
+const $pathValue = Model.pathValue
 
 class Hello extends React.Component { // a little worker
   static propTypes = {
@@ -19,6 +22,7 @@ class Hello extends React.Component { // a little worker
 
 export default createContainer(Hello, {
   fragments() {
+    // return [['hello'], ['name']] // also possible
     return {
       hello: null,
       name: null
@@ -27,8 +31,9 @@ export default createContainer(Hello, {
   interactions(model, intents) {
     const updateName$ = intents.get('updateName')
     updateName$.
-      subscribe(name => model.assign({ name }))
-      
+    // subscribe(name => model.local.set($pathValue(['name'], name))) // also possible
+      subscribe(name => model.local.set({ name }))
+
     return {
       updateName$
     }

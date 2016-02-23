@@ -5,6 +5,4 @@ import 'rxjs/add/observable/fromPromise'
 
 export { Provider } from './Provider'
 export { createContainer } from './createContainer'
-export { toPaths } from './utils/toPaths'
-export { values } from './utils/values'
-export { range } from './utils/range'
+export { entries, range, toPaths, toPathValues, values } from './utils'
