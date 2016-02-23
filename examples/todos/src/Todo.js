@@ -60,6 +60,7 @@ export default createContainer(Todo, {
 
     const deleteTodo$ = intents.get('deleteTodo')
     deleteTodo$.
+      // TODO what is a path syntax here
       subscribe(index => model.local.delete({
         todos: {
           [index]: null
